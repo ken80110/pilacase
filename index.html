@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>皮拉提斯體驗課程教學手冊 (ENPS/SADT)</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 設置 Inter 字體 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            background-color: #f7f9fb; /* 淺灰色背景 */
+        }
+        /* 自定義顏色和圓角 */
+        .stage-warmup { background-color: #e3f2fd; color: #1565c0; border-left: 4px solid #1565c0; } /* 暖身 - 藍色 */
+        .stage-main { background-color: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; }   /* 主訓練 - 綠色 */
+        .stage-cool { background-color: #fce4ec; color: #ad1457; border-left: 4px solid #ad1457; }   /* 收操 - 粉色 */
+        
+        .active-case {
+            background-color: #10b981; /* 綠色 */
+            color: white;
+            font-weight: 600;
+        }
+
+        /* SADT 內容樣式 */
+        .sadt-content {
+            line-height: 1.75;
+        }
+        .sadt-content span {
+            display: block; /* 恢復 block 屬性，使其換行 */
+            margin-bottom: 0.5rem; /* 恢復下邊距 */
+            /* margin-right: 0.75rem; */ /* 移除右邊距 */
+        }
+        .sadt-content strong {
+            color: #374151; /* gray-700 */
+        }
+        /* 關鍵教學指令高亮 (已移除) */
+        
+        /* 器材高亮 (已移除) */
+
+        /* 建議高亮 (已移除) */
+    </style>
+</head>
+<body>
+
+    <div id="app" class="min-h-screen flex flex-col lg:flex-row">
+        <!-- Sidebar for Case Selection -->
+        <aside class="w-full lg:w-72 bg-white shadow-lg lg:shadow-xl p-4 lg:sticky lg:top-0 lg:z-10 lg:h-screen lg:overflow-y-auto">
+            <div class="flex justify-between items-center border-b-2 pb-2 mb-4">
+                <h1 class="text-2xl font-bold text-gray-800">
+                    10 個案課程列表
+                </h1>
+                <!-- Mobile Toggle Button -->
+                <button id="toggle-list-btn" class="lg:hidden p-2 rounded-md hover:bg-gray-100 text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-4 6h4"></path></svg>
+                </button>
+            </div>
+            <div id="case-list" class="hidden lg:flex flex-wrap lg:flex-col gap-2">
+                <!-- Case buttons will be inserted here by JS -->
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main id="lesson-content" class="flex-1 p-4 sm:p-6 lg:p-8">
+            <header class="mb-8 border-b pb-4">
+                <h2 id="current-case-title" class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-2"></h2>
+                <p class="text-lg text-gray-600">皮拉提斯教案詳情 (ENPS/SADT SOP)</p>
+            </header>
+
+            <section id="case-summary-card" class="bg-white p-6 rounded-xl shadow-lg mb-8">
+                <h3 class="text-2xl font-bold text-blue-600 mb-4 border-b pb-2">個案概述與目標</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="font-semibold text-gray-700 mb-1">主訴 (完整)</p>
+                        <p id="main-complaint" class="text-gray-800"></p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="font-semibold text-gray-700 mb-1">課程目標</p>
+                        <p id="course-goal" class="text-gray-800"></p>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <p class="font-semibold text-gray-700 mb-1">器材使用</p>
+                        <p id="equipment-used" class="text-gray-800 font-medium"></p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Lesson Steps -->
+            <section class="mb-8">
+                <h3 class="text-2xl font-bold text-gray-700 mb-4">課程步驟 (2 暖身, 3 主訓練, 2 收操)</h3>
+                <div id="movements-container" class="space-y-6">
+                    <!-- Movement cards will be inserted here by JS -->
+                </div>
+            </section>
+
+            <!-- Friendly Advice -->
+            <section id="advice-card" class="bg-yellow-50 p-6 rounded-xl shadow-lg border-l-4 border-yellow-600">
+                <h3 class="text-2xl font-bold text-yellow-800 mb-4">親民建議 (體態與生活)</h3>
+                <div id="friendly-advice" class="text-yellow-900 leading-relaxed space-y-2">
+                    <!-- Advice points will be inserted here by JS -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Data Structure for all 10 lesson plans
+        // 內容已從 pilates_manual.html 完整遷移
+        const lessonPlans = [
+            {
+                id: 1,
+                caseTitle: "小白 (36歲/女) - 高低肩與腰酸",
+                mainComplaint: "目前65公斤, 想減少15%體脂肪及( 高低肩 問題)。久坐, 長期 腰酸 、工作壓力大, 睡眠不足。體脂肪43%, 內臟脂肪18。(小學老師，休假喜歡逛街，睡覺2:00-7:00，三餐外食)",
+                courseGoal: "啟動深層核心與臀部緩解腰酸，建立肩帶穩定性（高低肩），提升脊椎活動度。",
+                equipmentUsed: "核心床 (REFORMER)、穩定椅 (STABILITY CHAIR)、梯桶 (LADDER BARREL)。 （共 3 種）",
+                advice: [
+                    "<strong>體態/健康:</strong> 坐姿： 每 30 分鐘起身伸展或走動 2 分鐘。坐著時，可以將毛巾捲起放在下背處，保持脊椎的自然曲線，緩解腰酸。",
+                    "<strong>高低肩:</strong> 逛街時，換手提包包，不要總用同一側肩膀負重。",
+                    "<strong>飲食:</strong> 減少外食中含糖飲料和精緻澱粉（如拿鐵、麵包）的頻率，多選擇原型食物，幫助減脂。"
+                ],
+                movements: [
+                    { stage: "暖身 1", name: "FOOTWORK (Heel) (足部運動 腳跟)", equipment: "REFORMER", sop: "<strong>E:</strong> 這個是 核心床 (REFORMER) 我們今天會先從腿部訓練開始。 <strong>N:</strong> 我們要做『 足部運動 』，腳跟踩。 <strong>P:</strong> 這個動作可以溫暖腿部及臀部，同時練習在躺姿下穩定核心。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請仰躺，肩膀輕靠肩擋，腳跟踩腳桿，雙腳與骨盆同寬。骨盆保持在平穩的中立位。 <strong>A (Action):</strong> 吐氣， 想像用大腿和臀部的力量將床平穩地推出去，直到膝蓋伸直。 吸氣， 有控制、緩慢地讓床板歸位。 <strong>D (Details):</strong> 推出去時，膝蓋保持指向前方， 肚子要收緊 ，腰部和床板間的縫隙不要有明顯變化。 <strong>T (Transition):</strong> 做完 8 次，我們保持躺姿，準備下一個動作。" },
+                    { stage: "暖身 2", name: "FEET IN STRAPS (Frog) (腳踩繩帶 青蛙)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 腳踩繩帶 』中的『 青蛙 』。 <strong>P:</strong> 這個動作可以溫和活動髖關節與訓練下腹核心，緩解久坐的緊繃。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請仰躺，將腳弓套入繩帶。腳跟併攏，腳尖打開（V-feet），膝蓋彎曲靠近胸口。 <strong>A (Action):</strong> 吐氣， 用大腿內側力量將腳往前斜上方推出去。 吸氣， 緩慢彎曲膝蓋收回。 <strong>D (Details):</strong> 推出去時， 腳跟要一直黏在一起 ，確保腰部平貼在床板上，不要拱起。 <strong>T (Transition):</strong> 慢慢收回，把繩帶掛好。請側身坐起來。" },
+                    { stage: "主訓練 1", name: "LONG BOX PULLING STRAPS (T-Pull) (長箱拉繩 T字拉)", equipment: "REFORMER", sop: "<strong>E:</strong> 保持在 核心床 (REFORMER) 上，但我們會加上長箱。 <strong>N:</strong> 我們要做『 長箱拉繩 』中的『 T字拉 』。 <strong>P:</strong> 這是矯正 高低肩 的關鍵動作。它能強力訓練您的上背部和肩胛骨穩定肌群，幫助您找回兩側平衡，改善因高低肩造成的酸痛。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請趴在長箱上，胸口在箱緣。雙手抓住繩帶。 <strong>A (Action):</strong> 吐氣 ，雙手像 T 字一樣往兩側打開，與肩同高。 吸氣 ，慢慢放下。 <strong>D (Details):</strong> 打開時，想像 肩胛骨中間夾了一支筆 。脖子拉長，避免變成烏龜頸。專注感受兩側背部是否平均用力。 <strong>T (Transition):</strong> 慢慢放下繩帶，請小心下長箱，我們準備換到穩定椅。" },
+                    { stage: "主訓練 2", name: "CROSSOVER PRESS (交叉腿下推)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 這是 穩定椅 (STABILITY CHAIR) 。 <strong>N:</strong> 我們要做『 交叉腿下推 』。 <strong>P:</strong> 這個動作可以訓練單腳的臀部力量和穩定性。強化臀肌是支撐下背、緩解 腰酸 的核心關鍵。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在椅墊上，一隻腳的腳弓踩在踏板上，另一隻腳交叉放在踏板上方。 <strong>A (Action):</strong> 吐氣 ，用踩踏板那隻腳的臀部和大腿力量，把踏板往下踩。 吸氣 ，緩慢回彈。 <strong>D (Details):</strong> 踩下去時，身體要 保持直立 ，不要歪斜。 用屁股外側發力 ，將膝蓋穩定在外側。 <strong>T (Transition):</strong> 換邊做完，請下來，準備換到梯桶。" },
+                    { stage: "主訓練 3", name: "SIDE BENDING (側彎)", equipment: "BARREL", sop: "<strong>E:</strong> 這是 梯桶 (LADDER BARREL) ，它能提供側邊支撐。 <strong>N:</strong> 我們要做『 側彎 』。 <strong>P:</strong> 這個動作可以訓練側邊核心肌群，並伸展身體另一側，這對覺察和改善高低肩的兩側不平衡很有幫助。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請側身靠在桶子上，下面那隻腳踩在橫桿上，上面那隻腳踩高一格。雙手抱胸或放頭後。 <strong>A (Action):</strong> 吸氣， 身體往桶子的弧度躺下去，感覺側腰拉長。 吐氣， 用側邊肚子的力量將身體帶回直立。 <strong>D (Details):</strong> 身體要保持在一個平面上， 不要往前或往後倒 。專注於側腰收縮的力量將你拉回。 <strong>T (Transition):</strong> 換邊做完，請下梯桶。" },
+                    { stage: "收操 1", name: "MERMAID (美人魚)", equipment: "REFORMER", sop: "<strong>E:</strong> 回到 核心床 (REFORMER) 上。 <strong>N:</strong> 我們來做『 美人魚 』。 <strong>P:</strong> 這個動作可以伸展側腰和肩膀周圍，放鬆課程中訓練的上半身肌肉。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請盤腿坐在床板上，面向側邊。一隻手扶著腳桿，另一隻手往上延伸。 <strong>A (Action):</strong> 吐氣， 將床往外推，身体往腳桿方向彎曲。 吸氣， 慢慢回到起始位置。 <strong>D (Details):</strong> 彎過去時， 坐骨要坐穩 ，不要讓屁股離開床板。享受側腰被拉長的感覺。 <strong>T (Transition):</strong> 換邊做完，將床板推回。" },
+                    { stage: "收操 2", name: "ROLL DOWN (下捲)", equipment: "ARC", sop: "<strong>E:</strong> 回到 脊椎矯正器 (ARC) 上。 <strong>N:</strong> 最後我們做『 下捲 』。 <strong>P:</strong> 這個動作可以一節一節伸展脊椎，放鬆背部肌肉，以舒緩的方式結束。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請坐在 ARC 前面，腳踩穩，膝蓋彎曲。 <strong>A (Action):</strong> 吐氣， 肚子往內收，一節一節往後躺在 ARC 上。 吐氣時， 再用腹部力量慢慢捲起來坐直。 <strong>D (Details):</strong> 捲動時， 想像脊椎像珍珠串 ，一顆顆放，一顆顆捲。肩膀始終放鬆。 <strong>T (Transition):</strong> 課程結束。" }
+                ]
+            },
+            {
+                id: 2,
+                caseTitle: "小黑 (28歲/女) - X型腿與水腫",
+                mainComplaint: "想解決 X型腿 (膝內扣) 。身高155, 體重39KG( 過瘦 ), 想要增加肌肉量。久站，下肢容易 水腫 。肌肉量13KG, 體脂肪28%。 (服飾店店員，不喜歡流汗，晚上上班 14:00-23:00)",
+                courseGoal: "強化臀部外側肌群（改善膝內扣），提升下肢循環（改善水腫），溫和建立全身肌力。",
+                equipmentUsed: "核心床 (REFORMER)、穩定椅 (STABILITY CHAIR)、脊椎矯正器 (ARC)。 （共 3 種）",
+                advice: [
+                    "<strong>X型腿：</strong> 日常走路或站立時，試著感覺 臀部外側 微收，讓膝蓋對準第二根腳趾頭。",
+                    "<strong>水腫：</strong> 下班後可以將雙腳抬高超過心臟（如靠牆抬腿）10-15分鐘，幫助血液循環。",
+                    "<strong>飲食：</strong> 你太瘦了！要增加肌肉量必須增加熱量和蛋白質攝取。建議少量多餐，並增加優質蛋白質（如雞蛋、魚肉）和健康脂肪的攝取。"
+                ],
+                movements: [
+                    { stage: "暖身 1", name: "FOOTWORK (V-feet) (足部運動 V字腳)", equipment: "REFORMER", sop: "<strong>E:</strong> 這是 核心床 (REFORMER) 。 <strong>N:</strong> 我們要做『 足部運動 』，V字腳位。 <strong>P:</strong> 這個動作可以溫暖腿部，練習髖關節外轉，對改善X型腿很重要。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請仰躺，腳跟併攏、腳尖打開呈 V 字型，踩在腳桿上。骨盆保持平穩。 <strong>A (Action):</strong> 吐氣， 用大腿和臀部的力量將床推出去。 吸氣， 緩慢地讓床回來。 <strong>D (Details):</strong> 推出去時， 膝蓋要順著腳尖方向 ，不要往內扣！腳跟要緊緊黏著。 <strong>T (Transition):</strong> 很好，我們慢慢讓床回來。" },
+                    { stage: "暖身 2", name: "FOOTWORK (Tendon stretch) (足部運動 腳踝拉伸)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 腳踝拉伸 』。 <strong>P:</strong> 這個動作可以拉伸小腿和跟腱，提升下肢靈活度，緩解久站疲勞。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 腳趾球踩在腳桿上，雙腿推直床板。 <strong>A (Action):</strong> 吐氣， 將腳跟向下壓，感覺小腿後側被溫和拉緊。 吸氣， 再抬高腳跟。 <strong>D (Details):</strong> 下壓時， 大腿要保持伸直 ，不要讓膝蓋彎掉。讓動作來自腳踝的活動。 <strong>T (Transition):</strong> 慢慢收回床板，準備換到穩定椅。" },
+                    { stage: "主訓練 1", name: "SCAPULA ISOLATION PRONE (肩胛骨孤立訓練 趴臥)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 這是 穩定椅 (STABILITY CHAIR)。 <strong>N:</strong> 我們要做『 肩胛骨孤立訓練 』，趴臥的姿勢 。 <strong>P:</strong> 這個動作可以溫和地喚醒您的上背部和肩胛骨。建立上肢的穩定性，是全身肌力平衡的第一步。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請趴在椅墊上，雙手伸直，手掌輕輕壓在踏板上 。 <strong>A (Action):</strong> 吸氣 時，想像肩胛骨往中間夾，將踏板微微抬離地面。 吐氣 有控制放回 。 <strong>D (Details):</strong> 手臂保持伸直 ，用背部和肩胛骨的力量發力。脖子放鬆不抬頭 。 <strong>T (Transition):</strong> 慢慢起來，我們準備下一個動作。" },
+                    { stage: "主訓練 2", name: "CROSSOVER PRESS (交叉腿下推)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 繼續在 穩定椅 (STABILITY CHAIR) 上。 <strong>N:</strong> 我們要做『 交叉腿下推 』。 <strong>P:</strong> 這個動作可以訓練單腳和臀部外側力量，矯正X型腿造成的內扣趨勢。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在椅墊上，一隻腳的腳弓踩在踏板上，另一隻腳交叉放在踏板上方。 <strong>A (Action):</strong> 吐氣， 用踩踏板那隻腳的臀部和大腿力量，把踏板往下踩。 吸氣， 緩慢回彈。 <strong>D (Details):</strong> 踩下去時，身體要 保持直立 ，不要歪斜。 用屁股外側發力 ，將膝蓋穩定在外側。 <strong>T (Transition):</strong> 換邊做完，請下來。" },
+                    { stage: "主訓練 3", name: "ROLL DOWN (下捲)", equipment: "ARC", sop: "<strong>E:</strong> 這是 脊椎矯正器 (ARC) 。 <strong>N:</strong> 我們要做『 下捲 』。 <strong>P:</strong> 這個動作可以安全地訓練您的深層腹部力量，並活動脊椎。建立核心是穩定骨盆和下肢的基礎。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請坐在 ARC 前面，腳踩穩，膝蓋彎曲 。 <strong>A (Action):</strong> 吐氣時 肚子收，一節一節往後躺在 ARC 上。再用腹部力量慢慢捲起來坐直 。 <strong>D (Details):</strong> 想像你的肚子像一個 C 字型，往內凹。 下捲時要非常慢且有控制 。 <strong>T (Transition):</strong> 保持坐姿，我們準備收操。" },
+                    { stage: "收操 1", name: "SWIM/MODIFIED SWIM (游泳 變化式)", equipment: "ARC", sop: "<strong>E:</strong> 這是 脊椎矯正器 (ARC) 。 <strong>N:</strong> 我們要做『 游泳 』的變化式。 <strong>P:</strong> 這個動作可以溫和喚醒和伸展背部肌肉，並以流動動作舒緩壓力。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請趴在 ARC 上，肚子靠著弧頂。雙手往前延伸。 <strong>A (Action):</strong> 吸氣， 輕輕抬起右手和左腳，感覺身體延伸拉長。 吐氣， 放下。接著換邊。 <strong>D (Details):</strong> 抬起時， 脖子放鬆 ，視線看地板。動作輕柔，感覺背部在用力。 <strong>T (Transition):</strong> 慢慢下來。" },
+                    { stage: "收操 2", name: "ROUND BACK/FLAT BACK (圓背/平背)", equipment: "ARC", sop: "<strong>E:</strong> 繼續在 脊椎矯正器 (ARC) 上。 <strong>N:</strong> 最後我們做『 圓背/平背 』。 <strong>P:</strong> 這個動作可以溫和活動脊椎，讓身體回到中心平衡。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在 ARC 弧頂上，雙手扶著 ARC 兩側。 <strong>A (Action):</strong> 吐氣， 肚子收，背部往後拱（圓背）。 吸氣， 脊椎拉長向上（平背）。 <strong>D (Details):</strong> 拱背時，感覺背部被拉伸，平背時想像頭頂往上拉。 <strong>T (Transition):</strong> 課程結束。" }
+                ]
+            },
+            {
+                id: 3,
+                caseTitle: "小紅 (35歲/女) - 烏龜頸、圓肩、駝背",
+                mainComplaint: "半年後要辦婚禮，想瘦一點 ( 烏龜頸、圓肩、駝背 )。久坐用電腦。體脂肪35%, 體重62KG。 (公務員，朝九晚五，三餐家常菜)",
+                courseGoal: "矯正上交叉綜合症。強化上背、伸展胸肌、啟動深層頸屈肌與肩胛穩定肌群。",
+                equipmentUsed: "脊椎矯正器 (ARC)、核心床 (REFORMER)、梯桶 (LADDER BARREL)。 （共 3 種）",
+                advice: [
+                    "<strong>電腦：</strong> 調整電腦螢幕高度，讓視線保持水平。坐著時，可以做「下巴內收」運動（像做雙下巴），訓練深層頸屈肌。",
+                    "<strong>婚禮體態：</strong> 皮拉提斯增強背部力量，持續鍛鍊，穿婚紗時背部線條會更好看。",
+                    "<strong>久坐：</strong> 每 30 分鐘起身，伸展胸口並將頭輕輕往後拉。"
+                ],
+                movements: [
+                    { stage: "暖身 1", name: "ROUND BACK/FLAT BACK (圓背/平背)", equipment: "ARC", sop: "<strong>E:</strong> 這是 脊椎矯正器 (ARC) 。 <strong>N:</strong> 我們要做『 圓背/平背 』。 <strong>P:</strong> 這個動作可以活動脊椎，找到中立位，為矯正姿勢做準備。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請坐在 ARC 的弧頂，雙手扶 ARC 兩側。 <strong>A (Action):</strong> 吐氣， 肚子往內收，骨盆往後捲動（圓背）。 吸氣， 脊椎拉長向上，回到挺胸的平背。 <strong>D (Details):</strong> 平背時 胸口打開 ， 想像頭頂有線往上拉 ，不要聳肩。向下捲時，感覺脊椎一節一節分開。 <strong>T (Transition):</strong> 回到平背坐姿。" },
+                    { stage: "暖身 2", name: "SWAN DIVE (天鵝潛水)", equipment: "ARC", sop: "<strong>E:</strong> 繼續在 脊椎矯正器 (ARC) 上。 <strong>N:</strong> 我們要做『 天鵝潛水 』。 <strong>P:</strong> 這個動作可以喚醒背部伸肌力量，對抗駝背。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 趴在 ARC 上，肚子靠弧頂，雙手放在胸口兩側。 <strong>A (Action):</strong> 吸氣， 用背部力量將上半身抬起，胸口往前延伸。 吐氣， 放回。 <strong>D (Details):</strong> 抬起時， 肩膀要往下壓 ，遠離耳朵。 脖子保持拉長 ，視線看地板，避免烏龜頸。 <strong>T (Transition):</strong> 慢慢下來。" },
+                    { stage: "主訓練 1", name: "ARM WORK FACING FOOTBAR (Serve a tray)", equipment: "REFORMER", sop: "<strong>E:</strong> 這是 核心床 (REFORMER) 。 <strong>N:</strong> 我們要做『 面腳桿手臂運動 』中的『 送餐盤 』。 <strong>P:</strong> 這個動作是矯正圓肩關鍵，訓練肩膀外轉與肩胛穩定。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請跪在床板上，面向腳桿。雙手抓住繩帶，手肘彎曲 90 度，像端盤子。 <strong>A (Action):</strong> 吐氣， 保持手肘貼身體，手臂往外打開。 吸氣， 慢慢回來。 <strong>D (Details):</strong> 想像 肩胛骨往中間夾 ，胸口是打開的。 手肘要一直緊貼身體 兩側。 <strong>T (Transition):</strong> 保持跪姿，準備下一個動作。" },
+                    { stage: "主訓練 2", name: "BRIDGING (Pelvic Lift) (橋式 骨盆捲動)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上，請仰躺。 <strong>N:</strong> 我們要做『 橋式 』中的『 骨盆捲動 』。 <strong>P:</strong> 這個動作可以啟動您的臀部肌肉 。強壯的臀部是穩定骨盆的基礎，能為您改善上半身姿勢提供更好的支撐。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 仰躺，腳跟踩腳桿 。 <strong>A (Action):</strong> 吐氣時 骨盆先往後捲，一節一節抬離床面。 吸氣時 再一節一節放回 。 <strong>D (Details):</strong> 推高時， 臀部要夾緊 ， 感覺是屁股在用力 ，而不是腰 。 <strong>T (Transition):</strong> 慢慢放下，請側身坐起來，準備換到梯桶。" },
+                    { stage: "主訓練 3", name: "SWAN (天鵝)", equipment: "BARREL", sop: "<strong>E:</strong> 這是 梯桶 (LADDER BARREL) ，它的弧度可以幫助脊椎延伸。 <strong>N:</strong> 我們要做『 天鵝 』。 <strong>P:</strong> 這個動作是打開胸口、伸展脊椎的王牌動作，有效改善駝背和圓肩。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 趴在梯桶上，骨盆靠桶頂，雙手抓住橫桿。 <strong>A (Action):</strong> 吸氣， 用背部力量將身體往上拉，胸口打開，脊椎延伸。 吐氣， 慢慢放鬆回來。 <strong>D (Details):</strong> 往上時， 肩膀一定要往下壓 。 肚子收緊 ，保護你的腰。 <strong>T (Transition):</strong> 慢慢下來。" },
+                    { stage: "收操 1", name: "PULLING STRAPS+CHEST STRETCH", equipment: "REFORMER", sop: "<strong>E:</strong> 回到 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 拉繩+胸部伸展 』。 <strong>P:</strong> 這個動作可以伸展緊繃的胸肌，放鬆上背。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 跪在床板上，面向腳桿。雙手扶著腳桿。 <strong>A (Action):</strong> 吐氣， 讓床板帶著你往前推，屁股往後坐，感覺胸口和腋下被拉開。 吸氣， 讓床板回來。 <strong>D (Details):</strong> 保持呼吸，放鬆你的肩膀和脖子，享受伸展。 <strong>T (Transition):</strong> 慢慢讓床回來。" },
+                    { stage: "收操 2", name: "SIDE BENDING (側彎)", equipment: "BARREL", sop: "<strong>E:</strong> 回到 梯桶 (LADDER BARREL) 上。 <strong>N:</strong> 最後我們做『 側彎 』。 <strong>P:</strong> 這個動作可以伸展側腰和軀幹，放鬆全身。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 側身靠在桶子上，雙手抱胸或放頭後。 <strong>A (Action):</strong> 吸氣， 身體往桶子的弧度躺下去。 吐氣， 再用側邊肚子的力量慢慢回來。 <strong>D (Details):</strong> 身體要 保持在一個平面上 ，不要往前或往後倒。 <strong>T (Transition):</strong> 換邊做完，課程結束。" }
+                ]
+            },
+            {
+                id: 4,
+                caseTitle: "小橙 (32歲/女) - 剖腹產後、骨盆前傾與腰酸",
+                mainComplaint: "剖腹產 後小孩剛滿周歲。體力下降多還會 腰酸 ，想提升體力及讓晚上好睡 ( 骨盆前傾 )。無運動習慣。體脂肪35%, 體重48KG。 (留職停薪，預計 6 個月後回餐飲業主管職)",
+                courseGoal: "重建核心（腹橫肌）、啟動臀肌、伸展髖屈肌（改善骨盆前傾）、緩解腰酸。",
+                equipmentUsed: "核心床 (REFORMER)、脊椎矯正器 (ARC)、穩定椅 (STABILITY CHAIR)。 （共 3 種）",
+                advice: [
+                    "<strong>核心喚醒：</strong> 躺下時練習「腹式呼吸」，吐氣時輕輕收縮腹部（想像拉上拉鍊），這是啟動腹橫肌的最佳方式。",
+                    "<strong>睡眠：</strong> 晚上 10:30 睡覺時間很棒，建議睡前 30 分鐘開始降低光線，幫助身體準備入睡。",
+                    "<strong>飲食：</strong> 早餐的麵包拿鐵和晚餐的火鍋多半高油高糖，建議將拿鐵換成無糖飲品，正餐多增加蔬菜和優質蛋白質。"
+                ],
+                movements: [
+                    { stage: "暖身 1", name: "FOOTWORK (Heel) (足部運動 腳跟)", equipment: "REFORMER", sop: "<strong>E:</strong> 這是 核心床 (REFORMER) 。 <strong>N:</strong> 我們要做『 足部運動 』，腳跟踩。 <strong>P:</strong> 這個動作可以訓練腿部力量，練習在動作中保持骨盆的穩定（中立），對抗前傾。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 仰躺，腳跟踩腳桿，雙腳與骨盆同寬。 <strong>A (Action):</strong> 吐氣， 推出去， 吸氣 緩慢收回。 <strong>D (Details):</strong> 推和收時， 肚子要一直收緊 ， 腰部和床板的縫隙保持不變 ，不要讓骨盆往前倒（前傾）。 <strong>T (Transition):</strong> 保持躺姿。" },
+                    { stage: "暖身 2", name: "BRIDGING (Pelvic Lift) (橋式 骨盆捲動)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 橋式 』中的『 骨盆捲動 』。 <strong>P:</strong> 這個動作可以啟動臀部肌肉，同時活動脊椎，是改善骨盆前傾和腰酸的關鍵。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 腳跟踩腳桿。 <strong>A (Action):</strong> 吐氣時 骨盆先往後捲，一節一節抬離床面。 吸氣時 再一節一節放回。 <strong>D (Details):</strong> 推高時， 臀部要夾緊 ， 感覺是屁股在用力 ，而不是腰。 <strong>T (Transition):</strong> 慢慢放下。" },
+                    { stage: "主訓練 1", name: "HUNDRED (knee bent) (百式 膝蓋彎曲)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 百式 』，膝蓋彎曲的版本。 <strong>P:</strong> 這個動作可以訓練深層核心（腹橫肌），對剖腹產後腹部力量恢復非常重要。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 仰躺，雙腳抬起呈 90 度（桌面腳）。雙手抓繩帶。 <strong>A (Action):</strong> 吐氣時， 頭胸抬起，手臂上下快速拍打（吸 5 下，吐 5 下）。 <strong>D (Details):</strong> 拍打時， 肚子要一直往內收 。如果脖子酸，可以將頭放下來，但 核心持續用力 。 <strong>T (Transition):</strong> 慢慢放下。" },
+                    { stage: "主訓練 2", name: "LUNGES (弓步)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 弓步 』伸展。 <strong>P:</strong> 這個動作是改善骨盆前傾的關鍵！伸展緊繃的髖屈肌。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 一隻腳踩地，另一隻腳的膝蓋跪在床板上，面向側邊。 <strong>A (Action):</strong> 吐氣時， 把床板往後推，感覺跪姿腳的大腿前側被拉開。 吸氣 收回。 <strong>D (Details):</strong> 推出去時， 屁股要用力夾緊 ，肚子收緊，確保伸展到髖屈肌。 <strong>T (Transition):</strong> 換邊做完，準備換到脊椎矯正器。" },
+                    { stage: "主訓練 3", name: "SWAN DIVE (天鵝潛水)", equipment: "ARC", sop: "<strong>E:</strong> 這是 脊椎矯正器 (ARC) 。 <strong>N:</strong> 我們要做『 天鵝潛水 』。 <strong>P:</strong> 這個動作可以強化您的背部伸肌，打開胸口，幫您對抗因抱小孩或姿勢不良造成的駝背，同時也能溫和喚醒核心 。 <strong>S (示範/SADT):</strong> 我來示範一次 。 <strong>S (Set Up):</strong> 請趴在 ARC 上，肚子靠著弧頂。雙手放在胸口兩側，手肘彎曲 。 <strong>A (Action):</strong> 吸氣 ，用背部力量將上半身抬起，胸口往前上方延伸。 吐氣 ，緩慢放鬆回到起始位置 。 <strong>D (Details):</strong> 抬起時， 肩膀要往下壓 ，遠離耳朵 。 肚子要收緊 ，保護您的腰部不要過度擠壓，特別是剖腹產後，動作幅度要控制 。 <strong>T (Transition):</strong> 慢慢下來，我們保持在 ARC 上準備收操 。" },
+                    { stage: "收操 1", name: "ROUND BACK/FLAT BACK (圓背/平背)", equipment: "ARC", sop: "<strong>E:</strong> 繼續在 脊椎矯正器 (ARC) 上。 <strong>N:</strong> 我們要做『 圓背/平背 』。 <strong>P:</strong> 這個動作可以溫和地活動脊椎，讓身體回到中心平衡。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在 ARC 弧頂上。 <strong>A (Action):</strong> 吐氣圓背，吸氣平背拉長。 <strong>D (Details):</strong> 動作盡量放慢，感受脊椎的移動。 <strong>T (Transition):</strong> 準備換到穩定椅。" },
+                    { stage: "收操 2", name: "CAT PRESS STANDING (站姿貓式捲腹)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 這是 穩定椅 (STABILITY CHAIR) 。 <strong>N:</strong> 最後我們做『 站姿貓式捲腹 』。 <strong>P:</strong> 這個動作可以最後活動脊椎，透過站立姿勢的穩定訓練，結束課程。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 站在椅子前面，雙手扶著椅背。 <strong>A (Action):</strong> 吐氣時， 肚子收緊，背部拱起，將踏板往下壓。 吸氣 放鬆回彈。 <strong>D (Details):</strong> 動作保持流暢， 不要用力推踏板 ，用核心和背部去帶動。 <strong>T (Transition):</strong> 課程結束。" }
+                ]
+            },
+            {
+                id: 5,
+                caseTitle: "小藍 (38歲/女) - 翼狀肩胛與高壓",
+                mainComplaint: "上班時間太長壓力很大 淺眠 ，想藉由運動 舒壓 。偶而肩頸酸痛，伴隨手腕不舒服 ( 翼狀肩胛 )。體脂肪45%，內臟脂肪20。 (科技業 8:00-20:00，無運動習慣，容易食道逆流)",
+                courseGoal: "啟動前鋸肌（矯正翼狀肩胛），強化上背，放鬆肩頸，透過流暢動作舒壓。",
+                equipmentUsed: "核心床 (REFORMER)、穩定椅 (STABILITY CHAIR)、脊椎矯正器 (ARC)。 （共 3 種）",
+                advice: [
+                    "<strong>舒壓：</strong> 運動結束後可做 5 分鐘的深呼吸（鼻子吸氣 4 秒，嘴巴吐氣 6 秒），幫助降低壓力。",
+                    "<strong>翼狀肩胛：</strong> 休息時可以試著將兩肩向後向下輕輕轉開，讓肩胛骨貼回背部。",
+                    "<strong>食道逆流：</strong> 晚餐的麥當勞對食道逆流和體脂都不利。避免太飽後直接躺下，睡前 2-3 小時不進食。"
+                ],
+                movements: [
+                    { stage: "暖身 1", name: "SUPINE ARM WORK (Posterior deltoid pull)", equipment: "REFORMER", sop: "<strong>E:</strong> 這是 核心床 (REFORMER) 。 <strong>N:</strong> 我們要做『 後三角肌下拉 』。 <strong>P:</strong> 這個動作可以溫和喚醒肩胛骨周圍肌群，為穩定訓練做準備。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 仰躺，雙手抓繩帶，手臂伸直向上。 <strong>A (Action):</strong> 吐氣時， 手臂往身體兩側打開呈 T 字型。 吸氣 慢慢回到起始。 <strong>D (Details):</strong> 打開時， 感覺肩胛骨平貼在床板上 ，不要讓它飛起來（翼狀肩胛），肩膀放鬆。 <strong>T (Transition):</strong> 保持躺姿。" },
+                    { stage: "暖身 2", name: "SUPINE ARM WORK (Lat pull) (背闊肌下拉)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 背闊肌下拉 』。 <strong>P:</strong> 這個動作可以訓練背部力量，幫助肩胛骨穩定下壓，減少肩頸壓力。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 手臂伸直向上。 <strong>A (Action):</strong> 吐氣時， 想像腋下夾緊，手臂伸直往大腿方向拉下來。 吸氣 緩慢收回。 <strong>D (Details):</strong> 拉下來時， 肩膀要往下壓 ， 感覺背部在用力 ，而不是只用手臂。 <strong>T (Transition):</strong> 慢慢放回繩帶，請側身坐起來。" },
+                    { stage: "主訓練 1", name: "LONG STRETCH (Flat back) (長拉伸 平背)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 長拉伸 』，平背的版本。 <strong>P:</strong> 這個動作是訓練「前鋸肌」的王牌動作，是將翼狀肩胛拉回的關鍵。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 雙腳踩肩擋，雙手扶腳桿，呈平板式（棒式）。 <strong>A (Action):</strong> 吸氣 用肩膀力量將床往後推。 吐氣 用肚子力量將床拉回。 <strong>D (Details):</strong> 推和拉時， 肩胛骨都要用力往前推 ， 感覺腋下在用力 ，把肩胛骨緊緊貼在背上。 <strong>T (Transition):</strong> 慢慢停下，準備換到穩定椅。" },
+                    { stage: "主訓練 2", name: "SCAPULA ISOLATION PRONE (肩胛骨孤立訓練 趴臥)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 這是 穩定椅 (STABILITY CHAIR) 。 <strong>N:</strong> 我們要做『 肩胛骨孤立訓練 』，趴臥的姿勢。 <strong>P:</strong> 這個動作可以專門訓練肩胛骨的穩定和控制能力，是改善翼狀肩胛的關鍵。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 趴在椅墊上，雙手伸直，手掌輕輕壓在踏板上。 <strong>A (Action):</strong> 吸氣時， 想像肩胛骨往中間夾，將踏板微微抬離地面。 吐氣 有控制放回。 <strong>D (Details):</strong> 手臂保持伸直 ， 用背部和肩胛骨的力量發力 。脖子放鬆不抬頭。 <strong>T (Transition):</strong> 慢慢起來，準備下一個動作。" },
+                    { stage: "主訓練 3", name: "CROSSOVER PRESS (交叉腿下推)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 繼續在 穩定椅 (STABILITY CHAIR) 上。 <strong>N:</strong> 我們要做『 交叉腿下推 』。 <strong>P:</strong> 這個動作可以訓練單腳的臀部力量和穩定性。雖然您的問題在上半身，但強壯的下肢是穩定全身的基礎，也能幫助您舒緩壓力。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在椅墊上，一隻腳的腳弓踩在踏板上，另一隻腳交叉放在踏板上方 。 <strong>A (Action):</strong> 吐氣 ，用踩踏板那隻腳的臀部和大腿力量，把踏板往下踩 。 吸氣 ，緩慢回彈 。 <strong>D (Details):</strong> 踩下去時，身體要 保持直立 ，不要歪斜。 用屁股外側發力 。 <strong>T (Transition):</strong> 換邊做完，請下來，準備換到脊椎矯正器。" },
+                    { stage: "收操 1", name: "ROUND BACK/FLAT BACK (圓背/平背)", equipment: "ARC", sop: "<strong>E:</strong> 這是 脊椎矯正器 (ARC) 。 <strong>N:</strong> 我們要做『 圓背/平背 』。 <strong>P:</strong> 這個動作可以溫和活動脊椎，放鬆背部肌肉。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在 ARC 弧頂上，雙S (Set Up): 雙手扶 ARC 兩側。 <strong>A (Action):</strong> 吐氣圓背，吸氣平背拉長。 <strong>D (Details):</strong> 動作放慢，專注在脊椎的活動。 <strong>T (Transition):</strong> 保持坐姿。" },
+                    { stage: "收操 2", name: "ROLL DOWN (下捲)", equipment: "ARC", sop: "<strong>E:</strong> 繼續在 脊椎矯正器 (ARC) 上。 <strong>N:</strong> 最後我們做『 下捲 』。 <strong>P:</strong> 這個動作可以最後伸展脊椎，透過緩慢動作放鬆神經，幫助晚上淺眠問題。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在 ARC 前面，腳踩穩。 <strong>A (Action):</strong> 吐氣 肚子收，一節一節往後躺。再用腹部力量慢慢捲起來坐直。 <strong>D (Details):</strong> 捲動時， 放慢速度，搭配深長的呼吸 ，讓身體徹底放鬆。 <strong>T (Transition):</strong> 課程結束。" }
+                ]
+            },
+            {
+                id: 6,
+                caseTitle: "小橘 (38歲/女) - 肋骨外翻與備孕",
+                mainComplaint: "家庭主婦，備孕失敗，壓力大，容易失眠。 太瘦 ( 肋骨外翻 )。容易 脹氣 。肌肉量12KG。 (睡覺 00:00-09:30，三餐高熱量低營養)",
+                courseGoal: "強化核心（腹內外斜肌）以改善肋骨外翻，練習呼吸控制，溫和建立全身肌力。",
+                equipmentUsed: "核心床 (REFORMER)、梯桶 (LADDER BARREL)、穩定椅 (STABILITY CHAIR)。 （共 3 種）",
+                advice: [
+                    "<strong>肋骨外翻：</strong> 日常練習「橫向呼吸」，吸氣時感覺肋骨往兩側撐開，吐氣時肋骨往內收。",
+                    "<strong>增肌/體重：</strong> 你太瘦了！要增肌必須增加熱量和蛋白質攝取。早餐的巧克力吐司熱量高但營養低，建議換成全麥吐司配雞蛋或優格，午晚餐多增加肉類份量。",
+                    "<strong>脹氣：</strong> 飯後避免立刻躺下，多散步，多補充益生菌。"
+                ],
+                movements: [
+                    { stage: "暖身 1", name: "SHORT BOX ABDOMINALS (Round back) (圓背)", equipment: "REFORMER", sop: "<strong>E:</strong> 這是 核心床 (REFORMER) ，上面有短箱。 <strong>N:</strong> 我們要做『 短箱腹部訓練 』中的『 圓背 』。 <strong>P:</strong> 這個動作可以溫和啟動核心，強化腹部肌群來穩固肋骨，是改善肋骨外翻的基礎。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請坐在短箱上，腳踩在肩擋下的繩帶，雙手抱胸。 <strong>A (Action):</strong> 吐氣時， 肚子收緊，骨盆往後捲動，背部呈 C 字型往後躺。 吸氣 捲起。 <strong>D (Details):</strong> 往後躺時， 肋骨一定要收緊 ，不要讓它往上飛起來。想像肚臍貼向背部。 <strong>T (Transition):</strong> 保持坐姿。" },
+                    { stage: "暖身 2", name: "ROUND BACK/STRAIGHT BACK (圓背/平背)", equipment: "BARREL", sop: "<strong>E:</strong> 這是 梯桶 (LADDER BARREL) 。 <strong>N:</strong> 我們要做『 圓背/平背 』。 <strong>P:</strong> 這個動作可以活動脊椎，並練習在有支撐的情況下，找到核心發力感。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請坐在梯桶上，雙手扶著橫桿。 <strong>A (Action):</strong> 吐氣 圓背， 吸氣 脊椎拉長向上（平背）。 <strong>D (Details):</strong> 向上拉長時， 胸口打開，不要過度前頂 ，保持肋骨微收，避免外翻。 <strong>T (Transition):</strong> 準備下一個動作。" },
+                    { stage: "主訓練 1", name: "SUPINE ARM WORK (Lat pull) (背闊肌下拉)", equipment: "REFORMER", sop: "<strong>E:</strong> 回到 核心床 (REFORMER) 上，請仰躺。 <strong>N:</strong> 我們要做『 背闊肌下拉 』。 <strong>P:</strong> 這個動作可以溫和地訓練您的背部力量。建立上肢肌力是增肌的關鍵，也能幫助身體更穩定。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 仰躺，雙手抓繩帶，手臂伸直向上。 <strong>A (Action):</strong> 吐氣時 ，想像腋下夾緊，手臂伸直往大腿方向拉下來。 吸氣 緩慢收回。 <strong>D (Details):</strong> 拉下來時， 肩膀要往下壓 ， 肋骨要保持收緊 ，不要飛出來。感覺背部在用力。 <strong>T (Transition):</strong> 慢慢放回繩帶，請側身坐起來，準備換到梯桶。" },
+                    { stage: "主訓練 2", name: "PLANK/ T POSITION (棒式)", equipment: "BARREL", sop: "<strong>E:</strong> 回到 梯桶 (LADDER BARREL) 。 <strong>N:</strong> 我們要做『 棒式 』的變化。 <strong>P:</strong> 這個動作可以建立全身穩定性和核心耐力，梯桶支撐對過瘦身體更溫和。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 雙手放在地上，雙腳往前踩在梯桶的橫桿上，身體呈一條斜線。 <strong>A (Action):</strong> 保持核心收緊，專注在呼吸，維持穩定。 <strong>D (Details):</strong> 身體從頭到腳跟一條直線， 肋骨持續收緊 ，不要讓屁股翹太高或腰往下掉。 <strong>T (Transition):</strong> 慢慢讓膝蓋落地，準備換到穩定椅。" },
+                    { stage: "主訓練 3", name: "CROSSOVER PRESS (交叉腿下推)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 這是 穩定椅 (STABILITY CHAIR)。 <strong>N:</strong> 我們要做『 交叉腿下推 』。 <strong>P:</strong> 這個動作可以訓練單腳的臀部力量。您太瘦了，增加下肢肌肉量對備孕和增肌都很有幫助。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在椅墊上，一隻腳的腳弓踩在踏板上，另一隻腳交叉放在踏板上方。 <strong>A (Action):</strong> 吐氣 ，用踩踏板那隻腳的臀部和大腿力量，把踏板往下踩。 吸氣 ，緩慢回彈。 <strong>D (Details):</strong> 踩下去時，身體要 保持直立 ，不要歪斜。 用屁股外側發力 。 <strong>T (Transition):</strong> 換邊做完，請下來，準備收操。" },
+                    { stage: "收操 1", name: "SIDE BENDING (側彎)", equipment: "BARREL", sop: "<strong>E:</strong> 回到 梯桶 (LADDER BARREL) 上。 <strong>N:</strong> 我們要做『 側彎 』。 <strong>P:</strong> 這個動作可以伸展側腰和軀幹，放鬆壓力帶來的身體緊繃感。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 側身靠在桶子上，雙手抱胸。 <strong>A (Action):</strong> 吸氣時， 身體往桶子弧度躺下去。 吐氣時， 用側邊肚子力量回來。 <strong>D (Details):</strong> 身體保持在一個平面上， 脖子和肩膀要放輕鬆 。 <strong>T (Transition):</strong> 換邊做完。" },
+                    { stage: "收操 2", name: "MERMAID (美人魚)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 回到 穩定椅 (STABILITY CHAIR) 上。 <strong>N:</strong> 最後我們做『 美人魚 』。 <strong>P:</strong> 這個動作可以溫和伸展上身側邊，以平靜的方式結束。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 側坐在椅墊上，一隻手壓在踏板上，另一隻手往上延伸。 <strong>A (Action):</strong> 吐氣時， 讓踏板慢慢往上，身體順勢彎曲。 吸氣時， 再用側腰的力量把踏板壓回去。 <strong>D (Details):</strong> 動作要 緩慢而有控制 ，專注在呼吸和身體的伸展上。 <strong>T (Transition):</strong> 課程結束。" }
+                ]
+            },
+            {
+                id: 7,
+                caseTitle: "小綠 (32歲/女) - 足底筋膜炎與扁平足",
+                mainComplaint: "久站櫃姐， 足底筋膜炎 ，想改善身體緊繃 ( 扁平足 )。每週一次瑜伽。體重55KG, 體脂肪33%。 (休假喜歡跟同事去酒吧喝爛醉，無壓力)",
+                courseGoal: "強化足弓（改善扁平足/足底筋膜炎）、伸展小腿，強化核心與臀部。",
+                equipmentUsed: "核心床 (REFORMER)、穩定椅 (STABILITY CHAIR)、脊椎矯正器 (ARC)。 （共 3 種）",
+                advice: [
+                    "<strong>足底：</strong> 休息時可以用網球或高爾夫球輕輕踩踏腳底板，按摩筋膜。",
+                    "<strong>久站：</strong> 站立時可以練習微收腹部和臀部，不要把重量完全壓在腳上。",
+                    "<strong>生活：</strong> 皮拉提斯專注在核心穩定和體態矯正，與瑜伽的伸展柔韌互補。適度飲酒放鬆，但不要過量，以免影響睡眠品質和體力恢復。"
+                ],
+                movements: [
+                    { stage: "暖身 1", name: "FOOTWORK (Toes) (足部運動 腳趾)", equipment: "REFORMER", sop: "<strong>E:</strong> 這是 核心床 (REFORMER) 。 <strong>N:</strong> 我們要做『 足部運動 』，腳趾踩。 <strong>P:</strong> 這個動作可以溫和啟動足弓和小腿，是緩解足底筋膜炎的第一步。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請仰躺，腳趾球踩腳桿上，腳跟抬高。 <strong>A (Action):</strong> 吐氣 推出去， 吸氣 緩慢收回。 <strong>D (Details):</strong> 推出去時， 腳跟保持抬高 。想像腳底有一個『提拉』的力量， 將足弓抬起來 。 <strong>T (Transition):</strong> 保持躺姿。" },
+                    { stage: "暖身 2", name: "FOOTWORK (Tendon stretch) (腳踝拉伸)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 腳踝拉伸 』。 <strong>P:</strong> 這個動作可以拉伸小腿和跟腱，幫助舒緩足底緊繃。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 腳趾球踩腳桿上，雙腿推直床板。 <strong>A (Action):</strong> 吐氣時， 將腳跟向下壓，感覺小腿後側被拉緊。 吸氣 再抬高。 <strong>D (Details):</strong> 下壓時， 大腿保持伸直 。伸展的感覺是溫和的，不要過度用力。 <strong>T (Transition):</strong> 慢慢收回床板，準備換到穩定椅。" },
+                    { stage: "主訓練 1", name: "FOOTWORK (Ankle moblization) (腳踝運動)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 這是 穩定椅 (STABILITY CHAIR) 。 <strong>N:</strong> 我們要做『 腳踝運動 』。 <strong>P:</strong> 這個動作可以訓練腳踝控制和強化足弓，是改善扁平足和足底筋膜炎的關鍵訓練。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在椅墊前緣，雙腳踩在踏板上，腳跟微抬。 <strong>A (Action):</strong> 吐氣時， 腳踝向下踩，將踏板往下壓。 吸氣時， 腳踝往上勾，有控制地讓踏板回彈。 <strong>D (Details):</strong> 踩踏時， 腳踝要保持直線 ，不要內外歪斜。 用腳掌在用力 ，不是只有腿。 <strong>T (Transition):</strong> 保持坐姿。" },
+                    { stage: "主訓練 2", name: "SCAPULA ISOLATION PRONE (肩胛骨孤立訓練 趴臥)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 繼續在 穩定椅 (STABILITY CHAIR) 上。 <strong>N:</strong> 我們要做『 肩胛骨孤立訓練 』，趴臥的姿勢。 <strong>P:</strong> 這個動作可以溫和地喚醒您的上背部和肩胛骨。久站時，穩定的上背力量也能幫助您維持更好看的體態。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請趴在椅墊上，雙手伸直，手掌輕輕壓在踏板上 。 <strong>A (Action):</strong> 吸氣 時，想像肩胛骨往中間夾，將踏板微微抬離地面。 吐氣 有控制放回 。 <strong>D (Details):</strong> 手臂保持伸直 ，用背部和肩胛骨的力量發力。脖子放鬆不抬頭 。 <strong>T (Transition):</strong> 慢慢起來，準備換到脊椎矯正器。" },
+                    { stage: "主訓練 3", name: "SWAN DIVE (天鵝潛水)", equipment: "ARC", sop: "<strong>E:</strong> 這是 脊椎矯正器 (ARC) 。 <strong>N:</strong> 我們要做『 天鵝潛水 』。 <strong>P:</strong> 這個動作可以伸展胸椎，打開胸口，改善久站帶來的身體緊繃。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 趴在 ARC 上，雙手放在胸口兩側。 <strong>A (Action):</strong> 吸氣時， 用背部的力量將身體上半部抬起。 吐氣 慢慢放鬆。 <strong>D (Details):</strong> 抬起時， 肩膀往下壓 ，遠離耳朵。 肚子收緊 ，保護腰部。 <strong>T (Transition):</strong> 慢慢下來。" },
+                    { stage: "收操 1", name: "ROLL DOWN (下捲)", equipment: "ARC", sop: "<strong>E:</strong> 繼續在 脊椎矯正器 (ARC) 上。 <strong>N:</strong> 我們來做『 下捲 』。 <strong>P:</strong> 這個動作可以一節一節伸展脊椎，放鬆背部肌肉，以舒緩的方式結束。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請坐在 ARC 前面，腳踩穩，膝蓋彎曲。 <strong>A (Action):</strong> 吐氣， 肚子往內收，一節一節往後躺在 ARC 上。 吐氣時， 再用腹部力量慢慢捲起來坐直。 <strong>D (Details):</strong> 捲動時， 想像脊椎像珍珠串 ，一顆顆放，一顆顆捲。肩膀始終放鬆。 <strong>T (Transition):</strong> 保持坐姿，準備下一個動作。" },
+                    { stage: "收操 2", name: "ROUND BACK/FLAT BACK (圓背/平背)", equipment: "ARC", sop: "<strong>E:</strong> 回到 脊椎矯正器 (ARC) 上。 <strong>N:</strong> 最後我們做『 圓背/平背 』。 <strong>P:</strong> 這個動作可以溫和活動脊椎，舒緩全身緊繃感，結束課程。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在 ARC 弧頂上。 <strong>A (Action):</strong> 吐氣圓背，吸氣平背拉長。 <strong>D (Details):</strong> 動作保持緩慢，專注在呼吸上，讓身體感到放鬆。 <strong>T (Transition):</strong> 課程結束。" }
+                ]
+            },
+            {
+                id: 8,
+                caseTitle: "小紫 (66歲/女) - 椎間盤突出與易跌倒",
+                mainComplaint: "退休老板娘，身體退化，走路容易 跌倒 。有 椎間盤輕微突出 。想增強穩定度去歐洲。肌肉量12KG。 (喜歡煮飯，三餐自備)",
+                courseGoal: "強化核心與臀部肌力（增加穩定度，減少跌倒風險），避免脊椎過度彎曲和伸直（保護椎間盤）。",
+                equipmentUsed: "脊椎矯正器 (ARC)、核心床 (REFORMER)、穩定椅 (STABILITY CHAIR)。 （共 3 種）",
+                advice: [
+                    "<strong>椎間盤：</strong> 避免提重物、避免過度彎腰。起身時，請先側身，像嬰兒一樣將腳慢慢放下床再坐起。",
+                    "<strong>跌倒預防：</strong> 在家走路時，試著練習「腳跟先落地」，並注意家中地毯和光線。",
+                    "<strong>廚房：</strong> 備菜時，可以將一隻腳踩在矮凳上，減少長時間站立對下背的壓力。"
+                ],
+                movements: [
+                    { stage: "暖身 1", name: "ROUND BACK/FLAT BACK (圓背/平背)", equipment: "ARC", sop: "<strong>E:</strong> 這是 脊椎矯正器 (ARC) 。 <strong>N:</strong> 我們要做『 圓背/平背 』。 <strong>P:</strong> 這個動作可以溫和活動脊椎，找到中立的骨盆位置，保護椎間盤。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在 ARC 弧頂上。 <strong>A (Action):</strong> 吐氣 圓背， 吸氣 平背拉長。 <strong>D (Details):</strong> 動作範圍要 非常小 ，避免過度拱背或過度捲曲。 全程核心要微收 。 <strong>T (Transition):</strong> 回到平背坐姿。" },
+                    { stage: "暖身 2", name: "SWAN DIVE (天鵝潛水)", equipment: "ARC", sop: "<strong>E:</strong> 繼續在 脊椎矯正器 (ARC) 上。 <strong>N:</strong> 我們要做『 天鵝潛水 』。 <strong>P:</strong> 這個動作可以溫和啟動背部肌群，改善體態，抬高幅度需極小。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 趴在 ARC 上，肚子靠弧頂。雙手放在胸口兩側。 <strong>A (Action):</strong> 吸氣時， 用背部力量將身體上半部 微微 抬起。 吐氣 慢慢放鬆。 <strong>D (Details):</strong> 抬起高度要 很低 ，確保腰部沒有擠壓感。 肚子收緊 ，保護椎間盤。 <strong>T (Transition):</strong> 慢慢下來。" },
+                    { stage: "主訓練 1", name: "BRIDGING (Single Legs) (橋式 單腳)", equipment: "REFORMER", sop: "<strong>E:</strong> 這是 核心床 (REFORMER) 。 <strong>N:</strong> 我們要做『 單腳橋式 』。 <strong>P:</strong> 這個動作可以強力訓練臀部和單腳穩定性，對走路容易跌倒的問題有直接幫助。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 仰躺，雙腳腳跟踩腳桿，將身體抬高至橋式位置。 <strong>A (Action):</strong> 吐氣時， 慢慢將一隻腳抬離腳桿。 吸氣 平穩放回。接著換腳。 <strong>D (Details):</strong> 抬腳時， 骨盆絕對不能歪掉或往下掉 。核心像鋼鐵一樣撐住。動作要非常慢。 <strong>T (Transition):</strong> 慢慢將身體放回床板。" },
+                    { stage: "主訓練 2", name: "ARM WORK FACING FOOTBAR (Serve a tray) (面腳桿手臂運動 送餐盤)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上，請改為跪姿。 <strong>N:</strong> 我們要做『 面腳桿手臂運動 』中的『 送餐盤 』。 <strong>P:</strong> 這個動作可以溫和地訓練您的上背和肩膀穩定肌群。強化上肢力量，也能幫助您在需要時（如快跌倒時）更好地支撐身體。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請跪在床板上，面向腳桿。雙手抓住繩帶，手肘彎曲 90 度，像端盤子。 <strong>A (Action):</strong> 吐氣 ，保持手肘貼身體，手臂往外打開。 吸氣 ，慢慢回來。 <strong>D (Details):</strong> 想像 肩胛骨往中間夾 ，胸口是打開的。 手肘要一直緊貼身體 兩側。 核心全程收緊 保護腰部。 <strong>T (Transition):</strong> 慢慢放回繩帶，請小心側身坐起，準備換到穩定椅。" },
+                    { stage: "主訓練 3", name: "FOOTWORK (Lift standing) (站姿踮腳)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 這是 穩定椅 (STABILITY CHAIR) 。 <strong>N:</strong> 我們要做『 站姿踮腳 』。 <strong>P:</strong> 這個動作可以訓練小腿力量和腳踝穩定性，增加平衡感，預防跌倒。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 站在椅子前面，雙手扶著椅背，雙腳的腳掌前半段踩在踏板上。 <strong>A (Action):</strong> 吐氣時， 用小腿的力量將踏板往下踩到底。 吸氣 有控制回彈。 <strong>D (Details):</strong> 踩踏時， 身體保持直立 。腳踝要保持穩定，不要往內或往外翻。 <strong>T (Transition):</strong> 準備換到 ARC。" },
+                    { stage: "收操 1", name: "MERMAID (美人魚)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 繼續在 穩定椅 (STABILITY CHAIR) 上。 <strong>N:</strong> 我們來做『 美人魚 』。 <strong>P:</strong> 這個動作可以溫和伸展上身側邊，以平靜的方式結束。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 側坐在椅墊上，一隻手壓在踏板上，另一隻手往上延伸。 <strong>A (Action):</strong> 吐氣時， 讓踏板慢慢往上，身體順勢彎曲。 吸氣時， 再用側腰的力量把踏板壓回去。 <strong>D (Details):</strong> 動作要 緩慢而有控制 ，專注在呼吸和身體的伸展上。 <strong>T (Transition):</strong> 換邊做完。" },
+                    { stage: "收操 2", name: "FOOTWORK (Tendon stretch) (腳踝拉伸)", equipment: "STABILITY CHAIR", sop: "<strong>E:</strong> 繼續在 穩定椅 (STABILITY CHAIR) 上。 <strong>N:</strong> 最後我們做『 腳踝拉伸 』。 <strong>P:</strong> 這個動作可以溫和拉伸小腿和腳底，放鬆下肢緊繃。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 雙腳腳趾球踩踏板，將踏板踩到底。 <strong>A (Action):</strong> 吐氣時， 腳跟向下壓， 吸氣 再抬高腳跟。 <strong>D (Details):</strong> 伸展時， 大腿保持伸直 。肚子收緊保護腰部。 <strong>T (Transition):</strong> 課程結束。" }
+                ]
+            },
+            {
+                id: 9,
+                caseTitle: "小紅 (26歲/女) - 烏龜頸、圓肩、駝背",
+                mainComplaint: "半年後辦婚禮，想瘦一點 ( 烏龜頸、圓肩、駝背 )。久坐用電腦。體脂肪35%, 體重62KG。 (公務員，朝九晚五，三餐家常菜)",
+                courseGoal: "矯正上交叉綜合症。強化上背、伸展胸肌，訓練核心穩定（以穩定椅為主）。",
+                equipmentUsed: "穩定椅 (STABILITY CHAIR)、核心床 (REFORMER)、脊椎矯正器 (ARC)。 （共 3 種）",
+                advice: [
+                    "<strong>烏龜頸：</strong> 在辦公室可以練習「靠牆站立」1-2 分鐘，讓頭、肩、背、臀都貼到牆面，感受正確的體態。",
+                    "<strong>圓肩：</strong> 坐著時，可以將雙手在背後十指交扣，往後下方延伸，打開胸口。",
+                    "<strong>婚禮體態：</strong> 持續增強背部力量，穿婚紗時背部線條會更好看。"
+                ],
+                movements: [
+                    { stage: "暖身 1", name: "CAT PRESS STANDING (站姿貓式捲腹)", equipment: "CHAIR", sop: "<strong>E:</strong> 這是 穩定椅 (STABILITY CHAIR) 。 <strong>N:</strong> 我們要做『 站姿貓式捲腹 』。 <strong>P:</strong> 這個動作可以溫和活動脊椎和胸椎，舒緩久坐僵硬。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 站在椅子前面，雙手扶著椅背。 <strong>A (Action):</strong> 吐氣時， 肚子收緊，背部拱起，將踏板往下壓。 吸氣 放鬆回彈。 <strong>D (Details):</strong> 專注在 腹部收緊 和背部拱起的感覺，用核心帶動，不要用力推踏板。 <strong>T (Transition):</strong> 保持站姿。" },
+                    { stage: "暖身 2", name: "SCAPULA ISOLATION PRONE (肩胛骨孤立訓練 趴臥)", equipment: "CHAIR", sop: "<strong>E:</strong> 繼續在 穩定椅 (STABILITY CHAIR) 上。 <strong>N:</strong> 我們要做『 肩胛骨孤立訓練 』，趴臥的姿勢。 <strong>P:</strong> 這個動作可以溫和喚醒上背部和肩胛骨周圍的肌肉。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 趴在椅墊上，雙手伸直，手掌輕輕壓在踏板上。 <strong>A (Action):</strong> 吸氣時， 想像 肩胛骨往中間夾 ，將踏板微微抬離地面。 <strong>D (Details):</strong> 手臂保持伸直 ，用背部和肩胛骨的力量發力。脖子放鬆不抬頭。 <strong>T (Transition):</strong> 慢慢起來，準備換到核心床。" },
+                    { stage: "主訓練 1", name: "ARM WORK FACING FOOTBAR (Serve a tray) (面腳桿手臂運動 送餐盤)", equipment: "REFORMER", sop: "<strong>E:</strong> 這是 核心床 (REFORMER) 。 <strong>N:</strong> 我們要做『 面腳桿手臂運動 』中的『 送餐盤 』。 <strong>P:</strong> 這個動作是矯正圓肩關鍵，訓練肩膀外轉與肩胛穩定。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請跪在床板上，面向腳桿。雙手抓住繩帶，手肘彎曲 90 度，像端盤子。 <strong>A (Action):</strong> 吐氣， 保持手肘貼身體，手臂往外打開。 吸氣， 慢慢回來。 <strong>D (Details):</strong> 想像 肩胛骨往中間夾 ，胸口是打開的。 手肘要一直緊貼身體 兩側。 <strong>T (Transition):</strong> 保持跪姿，準備下一個動作。" },
+                    { stage: "主訓練 2", name: "BRIDGING (Pelvic Lift) (橋式 骨盆捲動)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上，請仰躺。 <strong>N:</strong> 我們要做『 橋式 』中的『 骨盆捲動 』。 <strong>P:</strong> 這個動作可以啟動您的臀部肌肉。強壯的臀部是穩定骨盆的基礎，能為您改善上半身姿勢提供更好的支撐 。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 仰躺，腳跟踩腳桿 。 <strong>A (Action):</strong> 吐氣時 骨盆先往後捲，一節一節抬離床面。 吸氣時 再一節一節放回 。 <strong>D (Details):</strong> 推高時， 臀部要夾緊 ， 感覺是屁股在用力 ，而不是腰 。 <strong>T (Transition):</strong> 慢慢放下，請側身坐起來，準備換到脊椎矯正器。" },
+                    { stage: "主訓練 3", name: "SWAN DIVE (天鵝潛水)", equipment: "ARC", sop: "<strong>E:</strong> 這是 脊椎矯正器 (ARC) 。 <strong>N:</strong> 我們要做『 天鵝潛水 』。 <strong>P:</strong> 這個動作可以打開胸口，伸展脊椎，改善駝背。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 趴在 ARC 上，雙手放在胸口兩側。 <strong>A (Action):</strong> 吸氣時， 用背部的力量將身體上半部抬起。 吐氣 慢慢放鬆。 <strong>D (Details):</strong> 往上時， 肩膀要往下壓 ，遠離耳朵。 肚子收緊 。 <strong>T (Transition):</strong> 慢慢下來。" },
+                    { stage: "收操 1", name: "ROUND BACK/FLAT BACK (圓背/平背)", equipment: "ARC", sop: "<strong>E:</strong> 繼續在 脊椎矯正器 (ARC) 上。 <strong>N:</strong> 我們要做『 圓背/平背 』。 <strong>P:</strong> 這個動作可以溫和地伸展和活動脊椎，放鬆背部肌肉。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在 ARC 弧頂上。 <strong>A (Action):</strong> 吐氣圓背，吸氣平背拉長。 <strong>D (Details):</strong> 專注在背部被拉伸的感覺。 <strong>T (Transition):</strong> 準備換到核心床。" },
+                    { stage: "收操 2", name: "ROLL DOWN (下捲)", equipment: "ARC", sop: "<strong>E:</strong> 繼續在 脊椎矯正器 (ARC) 上。 <strong>N:</strong> 我們來做『 下捲 』。 <strong>P:</strong> 這個動作可以一節一節伸展脊椎，放鬆背部肌肉，以舒緩的方式結束。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請坐在 ARC 前面，腳踩穩，膝蓋彎曲。 <strong>A (Action):</strong> 吐氣， 肚子往內收，一節一節往後躺在 ARC 上。 吐氣時， 再用腹部力量慢慢捲起來坐直。 <strong>D (Details):</strong> 捲動時， 想像脊椎像珍珠串 ，一顆顆放，一顆顆捲。肩膀始終放鬆。 <strong>T (Transition):</strong> 課程結束。" }
+                ]
+            },
+            {
+                id: 10,
+                caseTitle: "小白 (31歲/女) - 骨盆前傾與腰酸",
+                mainComplaint: "目前65公斤，想減少15%體脂肪及 ( 骨盆前傾 )。長期 腰酸 、久坐、工作壓力大。體脂肪43%，內臟脂肪18。 (小學老師，休假喜歡逛街，睡覺2:00-7:00，三餐外食)",
+                courseGoal: "啟動臀部和核心，伸展髖屈肌（改善骨盆前傾），強化背部，緩解腰酸。",
+                equipmentUsed: "核心床 (REFORMER)、梯桶 (LADDER BARREL)、脊椎矯正器 (ARC)。 （共 3 種）",
+                advice: [
+                    "<strong>骨盆前傾：</strong> 走路或站立時，試著感覺 恥骨 往肚臍方向微收（輕微後傾），這是幫助核心啟動、減少腰椎壓力的自然姿勢。",
+                    "<strong>久坐：</strong> 坐在椅子上時，屁股要盡量往後坐到底，讓背部有椅背支撐。",
+                    "<strong>飲食/睡眠：</strong> 晚睡和外食會影響減脂和壓力，建議將睡覺時間提早，多喝水幫助改善容易脹氣及便秘。"
+                ],
+                movements: [
+                    { stage: "暖身 1", name: "FOOTWORK (Heel) (足部運動 腳跟)", equipment: "REFORMER", sop: "<strong>E:</strong> 這是 核心床 (REFORMER) 。 <strong>N:</strong> 我們要做『 足部運動 』，腳跟踩。 <strong>P:</strong> 這個動作可以訓練腿部力量，練習在動作中保持骨盆的穩定，對抗前傾。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 仰躺，腳跟踩腳桿，雙腳與骨盆同寬。 <strong>A (Action):</strong> 吐氣 推出去， 吸氣 緩慢收回。 <strong>D (Details):</strong> 推和收時， 肚子要一直收緊 ，腰部和床板間的縫隙保持不變，不要讓骨盆往前倒（前傾）。 <strong>T (Transition):</strong> 保持躺姿。" },
+                    { stage: "暖身 2", name: "FEET IN STRAPS (Frog) (腳踩繩帶 青蛙)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 腳踩繩帶 』中的『 青蛙 』。 <strong>P:</strong> 這個動作可以溫和活動髖關節與訓練下腹核心，緩解久坐的緊繃。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 仰躺，將腳弓套入繩帶。V-feet，膝蓋彎曲靠近胸口。 <strong>A (Action):</strong> 吐氣時， 用大腿內側力量將腳往前斜上方推出去。 吸氣 緩慢收回。 <strong>D (Details):</strong> 推出去時， 腳跟要一直黏在一起 ，確保腰部平貼在床板上。 <strong>T (Transition):</strong> 慢慢收回，把繩帶掛好。請側身坐起來。" },
+                    { stage: "主訓練 1", name: "LUNGES (弓步)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上。 <strong>N:</strong> 我們要做『 弓步 』伸展。 <strong>P:</strong> 這個動作是改善骨盆前傾的關鍵！伸展久坐 而緊繃的髖屈肌。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 一隻腳踩地，另一隻腳的膝蓋跪在床板上，面向側邊。 <strong>A (Action):</strong> 吐氣時， 把床板往後推，感覺跪姿腳的大腿前側被拉開。 吸氣 收回。 <strong>D (Details):</strong> 推出去時， 屁股要用力夾緊 ，肚子收緊，確保伸展到髖屈肌。 <strong>T (Transition):</strong> 換邊做完，準備換到梯桶。" },
+                    { stage: "主訓練 2", name: "ARM WORK FACING FOOTBAR (Serve a tray) (面腳桿手臂運動 送餐盤)", equipment: "REFORMER", sop: "<strong>E:</strong> 繼續在 核心床 (REFORMER) 上，請改為跪姿。 <strong>N:</strong> 我們要做『 面腳桿手臂運動 』中的『 送餐盤 』。 <strong>P:</strong> 這個動作可以溫和地訓練您的上背和肩膀穩定肌群。強化上肢力量，也能幫助您改善久坐的體態，減少背部壓力。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請跪在床板上，面向腳桿。雙手抓住繩帶，手肘彎曲 90 度，像端盤子 。 <strong>A (Action):</strong> 吐氣 ，保持手肘貼身體，手臂往外打開。 吸氣 ，慢慢回來 。 <strong>D (Details):</strong> 想像 肩胛骨往中間夾 ，胸口是打開的。 手肘要一直緊貼身體 兩側 。 核心全程收緊 保護腰部。 <strong>T (Transition):</strong> 慢慢放回繩帶，請小心側身坐起，準備換到梯桶。" },
+                    { stage: "主訓練 3", name: "ROUND BACK/STRAIGHT BACK (圓背/平背)", equipment: "BARREL", sop: "<strong>E:</strong> 繼續在 梯桶 (LADDER BARREL) 上。 <strong>N:</strong> 我們要做『 圓背/平背 』。 <strong>P:</strong> 這個動作可以活動脊椎，並練習在有支撐的情況下，找到核心發力感。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在梯桶上，雙手扶著橫桿。 <strong>A (Action):</strong> 吐氣 圓背， 吸氣 脊椎拉長向上（平背）。 <strong>D (Details):</strong> 向上拉長時， 胸口打開，想像頭頂往上拉 。向下捲時，感覺腹部收緊。 <strong>T (Transition):</strong> 保持坐姿。" },
+                    { stage: "收操 1", name: "ROLL DOWN (下捲)", equipment: "ARC", sop: "<strong>E:</strong> 這是 脊椎矯正器 (ARC) 。 <strong>N:</strong> 我們要做『 下捲 』。 <strong>P:</strong> 這個動作可以安全地伸展脊椎，透過緩慢動作放鬆神經。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 坐在 ARC 前面，腳踩穩。 <strong>A (Action):</strong> 吐氣 肚子收，一節一節往後躺。再用腹部力量慢慢捲起來坐直。 <strong>D (Details):</strong> 動作保持緩慢輕柔， 想像脊椎像珍珠串 。 <strong>T (Transition):</strong> M (Transition): 保持坐姿。" },
+                    { stage: "收操 2", name: "MERMAID (美人魚)", equipment: "REFORMER", sop: "<strong>E:</strong> 回到 核心床 (REFORMER) 上。 <strong>N:</strong> 最後我們來做『 美人魚 』。 <strong>P:</strong> 這個動作可以伸展側腰和肩膀周圍，放鬆課程中訓練的上半身肌肉 。 <strong>S (示範/SADT):</strong> 我來示範一次。 <strong>S (Set Up):</strong> 請盤腿坐在床板上，面向側邊。一隻手扶著腳桿 。 <strong>A (Action):</strong> 吐氣 ，將床往外推，身体往腳桿方向彎曲。 吸氣 ，慢慢回到起始位置 。 <strong>D (Details):</strong> 彎過去時， 坐骨要坐穩 ，不要讓屁股離開床板 。 <strong>T (Transition):</strong> 換邊做完，課程結束。" }
+                ]
+            }
+        ];
+
+        // Global state for the currently selected case ID
+        let currentCaseId = 1;
+
+        // Function to create case selection buttons
+        function createCaseList() {
+            const listContainer = document.getElementById('case-list');
+            if (!listContainer) return;
+            
+            listContainer.innerHTML = lessonPlans.map(plan => {
+                return `
+                    <button id="case-btn-${plan.id}" 
+                        data-id="${plan.id}"
+                        class="case-button w-full px-4 py-2 text-left rounded-lg transition duration-150 ease-in-out hover:bg-gray-200 text-sm truncate"
+                    >
+                        ${plan.id}. ${plan.caseTitle}
+                    </button>
+                `;
+            }).join('');
+
+            // Add event listeners
+            listContainer.querySelectorAll('.case-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    renderLesson(id);
+
+                    // Auto-hide list on mobile after selection
+                    if (window.innerWidth < 1024) {
+                        document.getElementById('case-list').classList.add('hidden');
+                    }
+                });
+            });
+        }
+
+        // Function to render the selected lesson plan
+        function renderLesson(id) {
+            const plan = lessonPlans.find(p => p.id === id);
+            if (!plan) return;
+
+            currentCaseId = id;
+
+            // 1. Update Header
+            document.getElementById('current-case-title').textContent = plan.caseTitle;
+
+            // 2. Update Summary Card
+            document.getElementById('main-complaint').textContent = plan.mainComplaint;
+            document.getElementById('course-goal').textContent = plan.courseGoal;
+            document.getElementById('equipment-used').textContent = plan.equipmentUsed;
+
+            // 3. Update Movements
+            const movementsContainer = document.getElementById('movements-container');
+            movementsContainer.innerHTML = plan.movements.map(move => {
+                const stageClass = getStageClass(move.stage);
+                
+                // 將 sop 字符串轉換為帶 <span> 的 HTML
+                const sopHtml = move.sop.replace(/<strong>(E:|N:|P:|S \(示範\/SADT\):|S \(Set Up\):|A \(Action\):|D \(Details\):|T \(Transition\):)<\/strong>/g, '</span><span><strong>$1</strong>');
+                
+                return `
+                    <div class="bg-white p-4 sm:p-6 rounded-xl shadow-md ${stageClass}">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-2 mb-4">
+                            <p class="text-xl font-bold">${move.stage} - ${move.name}</p>
+                            <span class="bg-gray-100 text-gray-700 font-medium px-3 py-1 rounded-full text-xs mt-2 sm:mt-0">
+                                器材: ${move.equipment}
+                            </span>
+                        </div>
+                        <div class="sadt-content text-gray-800">
+                            <span>${sopHtml.substring(7)}</span> <!-- 移除第一個多餘的 </span> -->
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // 4. Update Friendly Advice
+            // 修正：移除 advice 中的 highlight span
+            const adviceHtml = plan.advice.map(item => {
+                return `<div>${item.replace(/<span class='highlight'>(.*?)<\/span>/g, '$1')}</div>`;
+            }).join('');
+            document.getElementById('friendly-advice').innerHTML = adviceHtml;
+
+
+            // 5. Update active button styles
+            document.querySelectorAll('.case-button').forEach(btn => {
+                btn.classList.remove('active-case', 'bg-gray-200');
+                if (parseInt(btn.dataset.id) === id) {
+                    btn.classList.add('active-case');
+                } else {
+                    btn.classList.add('hover:bg-gray-200', 'text-gray-800');
+                }
+            });
+
+            // Scroll to top of main content on mobile after changing case
+            if (window.innerWidth < 1024) {
+                document.getElementById('lesson-content').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Utility function to determine stage color/class
+        function getStageClass(stage) {
+            if (stage.includes("暖身")) return "stage-warmup";
+            if (stage.includes("主訓練")) return "stage-main";
+            if (stage.includes("收操")) return "stage-cool";
+            return "bg-gray-100 text-gray-800 border-l-4 border-gray-400";
+        }
+
+        // Initialization
+        window.onload = function() {
+            // Mobile list toggle logic
+            const toggleBtn = document.getElementById('toggle-list-btn');
+            const caseList = document.getElementById('case-list');
+            
+            if (toggleBtn) {
+                toggleBtn.addEventListener('click', () => {
+                    caseList.classList.toggle('hidden');
+                });
+            }
+
+            createCaseList();
+            // Render the first lesson by default
+            renderLesson(currentCaseId);
+        };
+    </script>
+
+</body>
+</html>
+
